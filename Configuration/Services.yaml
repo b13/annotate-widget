@@ -1,0 +1,22 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  B13\AnnotateWidget\:
+    resource: '../Classes/*'
+
+  dashboard.widget.annotate:
+    class: B13\AnnotateWidget\Widget\CommentsWidget
+    arguments:
+      $view: '@dashboard.views.widget'
+    tags:
+      - name: dashboard.widget
+        identifier: annotate
+        title: Pages with comments
+        description: Show pages with Comments
+        groupNames: general
+        iconIdentifier: actions-comment
+        height: medium
+        width: medium

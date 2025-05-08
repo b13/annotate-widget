@@ -1,0 +1,21 @@
+{
+  "name": "b13/annotate-widget",
+  "type": "typo3-cms-extension",
+  "description": "Extension providing a TYPO3 Dashboard widget for b13/annotate",
+  "require": {
+    "php": "^8",
+    "typo3/cms-core": "^11.5 || ^12.4",
+    "typo3/cms-dashboard": "^11.5 || ^12.4",
+    "b13/annotate": "*"
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "annotate_widget"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "B13\\AnnotateWidget\\": "Classes/"
+    }
+  }
+}

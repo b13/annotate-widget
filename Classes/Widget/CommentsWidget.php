@@ -12,39 +12,50 @@ namespace B13\AnnotateWidget\Widget;
  * of the License, or any later version.
  */
 
-use B13\Annotate\Domain\Repository\CommentRepository;
 use Doctrine\DBAL\ParameterType;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\Dashboard\Widgets\RequestAwareWidgetInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetConfigurationInterface;
 use TYPO3\CMS\Dashboard\Widgets\WidgetInterface;
-use TYPO3\CMS\Fluid\View\StandaloneView;
 
-class CommentsWidget implements WidgetInterface
+class CommentsWidget implements WidgetInterface, RequestAwareWidgetInterface
 {
+    private ServerRequestInterface $request;
+
     public function __construct(
-        protected WidgetConfigurationInterface $configuration,
-        protected StandaloneView $view,
-        protected CommentRepository $commentRepository,
-        protected ConnectionPool $connectionPool
+        private readonly WidgetConfigurationInterface $configuration,
+        private readonly ViewFactoryInterface $viewFactory,
+        private readonly ConnectionPool $connectionPool
     ) {}
+
+    public function setRequest(ServerRequestInterface $request): void
+    {
+        $this->request = $request;
+    }
 
     public function renderWidgetContent(): string
     {
-        $this->view->setTemplatePathAndFilename('EXT:annotate/Resources/Private/Templates/Widget/Comments.html');
-        $this->view->assignMultiple([
+        $view = $this->viewFactory->create(new ViewFactoryData(
+            layoutRootPaths: ['EXT:dashboard/Resources/Private/Layouts/'],
+            templateRootPaths: ['EXT:annotate/Resources/Private/Templates'],
+            request: $this->request
+        ));
+        $view->assignMultiple([
             'pages' => $this->getPagesWithComments(),
             'configuration' => $this->configuration,
         ]);
-        return $this->view->render();
+        return $view->render('Widget/Comments');
     }
 
     protected function getPagesWithComments(): array
     {
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable('pages');
         return $queryBuilder
-            ->select('pages.uid', 'pages.title')
-            ->add('select', 'COUNT(sys_comment.uid) AS commentCount', true)
+            ->selectLiteral('COUNT(sys_comment.uid) AS commentCount')
+            ->addSelect('pages.uid', 'pages.title')
             ->from('pages')
             ->innerJoin(
                 'pages',

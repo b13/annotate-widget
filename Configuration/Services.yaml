@@ -9,8 +9,6 @@ services:
 
   dashboard.widget.annotate:
     class: B13\AnnotateWidget\Widget\CommentsWidget
-    arguments:
-      $view: '@dashboard.views.widget'
     tags:
       - name: dashboard.widget
         identifier: annotate
